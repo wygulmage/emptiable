@@ -15,22 +15,27 @@ class Emptiable m where
 {-^ @empty :: m a@ does not contain any @a@s.
 All of the laws should be obvious. Most of the laws are "free" if @m@ isn't a GADT.
 Laws:
-> Functor m => fmap f empty = empty -- "free"
+@'Functor' m@
+prop> \ f -> fmap f empty = empty -- "free"
 
-> Applicative m =>
-> empty '<*>' mx  =  empty '<*' mx
-> mf '<*>' empty  =  mf '*>' empty
-> empty '<*>' mx '<*>' empty  =  empty
+> Applicative m
+prop> \ mx -> empty '<*>' mx  =  empty '<*' mx
+prop> \ mf -> mf '<*>' empty  =  mf '*>' empty
+prop> \ mx -> empty '<*>' mx '<*>' empty  =  empty
 'empty' must always be an anihilative zero for 'Applicative' multiplication rather than a unit, but effects performed before reaching 'empty' may be impossible to undo.
 
-> Monad m => empty '>>=' f = empty -- "free"
+> Monad m
+prop> \ f -> empty '>>=' f = empty -- "free"
 
-> Foldable m => 'null' empty == True -- "free"
+> Foldable m
+prop> 'null' empty == True -- "free"
 
-> Alternative m => empty '<|>' mx  =  mx  =  mx '<|>' empty
+> Alternative m
+prop> \ mx -> empty '<|>' mx  =  mx  =  mx '<|>' empty
 The Alternative requirement implies that 'empty' = 'Control.Applicative.empty'.
 
-> MonadPlus m => 'mplus' empty mx = mx = 'mplus' mx empty
+> MonadPlus m
+prop> \ mx -> 'mplus' empty mx = mx = 'mplus' mx empty
 The MonadPlus requirement implies that 'empty' = 'Control.Monad.mzero'.
 -}
    empty :: m a
