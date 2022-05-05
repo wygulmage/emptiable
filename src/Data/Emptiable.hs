@@ -16,6 +16,21 @@ import qualified Data.IntMap as IntMap
 import qualified Data.Map as Map
 import qualified Data.Sequence as Seq
 import qualified Data.Set as Set
+-- Transformers
+import Control.Applicative.Backwards
+import Control.Monad.Trans.Except
+import Control.Monad.Trans.Identity
+import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Reader
+import qualified Control.Monad.Trans.RWS.CPS as CPS
+import qualified Control.Monad.Trans.RWS.Lazy as Lazy
+import qualified Control.Monad.Trans.RWS.Strict as Strict
+import qualified Control.Monad.Trans.State.Lazy as Lazy
+import qualified Control.Monad.Trans.State.Strict as Strict
+import qualified Control.Monad.Trans.Writer.CPS as CPS
+import qualified Control.Monad.Trans.Writer.Lazy as Lazy
+import qualified Control.Monad.Trans.Writer.Strict as Strict
+import Data.Functor.Reverse
 
 
 class Emptiable m where
@@ -76,3 +91,33 @@ instance Emptiable IntMap.IntMap where empty = IntMap.empty
 instance Emptiable (Map.Map i) where empty = Map.empty
 instance Emptiable Seq.Seq where empty = Seq.empty
 instance Emptiable Set.Set where empty = Set.empty
+
+--- Transformers Instances ---
+instance (Applicative m)=> Emptiable (MaybeT m) where
+   empty = MaybeT (pure Nothing)
+instance (Emptiable m)=> Emptiable (Backwards m) where
+   empty = Backwards empty
+instance (Emptiable m)=> Emptiable (ExceptT e m) where
+   empty = ExceptT empty
+instance (Emptiable m)=> Emptiable (IdentityT m) where
+   empty = IdentityT empty
+instance (Emptiable m)=> Emptiable (ReaderT r m) where
+   empty = ReaderT (\_-> empty)
+instance (Emptiable m, Functor m, Monoid w)=> Emptiable (CPS.RWST r w s m) where
+   empty = CPS.rwsT (\ _ _ -> empty)
+instance (Emptiable m)=> Emptiable (Lazy.RWST r w s m) where
+   empty = Lazy.RWST (\ _ _ -> empty)
+instance (Emptiable m)=> Emptiable (Strict.RWST r w s m) where
+   empty = Strict.RWST (\ _ _ -> empty)
+instance (Emptiable m)=> Emptiable (Lazy.StateT s m) where
+   empty = Lazy.StateT (\ _ -> empty)
+instance (Emptiable m)=> Emptiable (Strict.StateT s m) where
+   empty = Strict.StateT (\ _ -> empty)
+instance (Emptiable m, Functor m, Monoid w)=> Emptiable (CPS.WriterT w m) where
+   empty = CPS.writerT empty
+instance (Emptiable m)=> Emptiable (Lazy.WriterT w m) where
+   empty = Lazy.WriterT empty
+instance (Emptiable m)=> Emptiable (Strict.WriterT w m) where
+   empty = Strict.WriterT empty
+instance (Emptiable m)=> Emptiable (Reverse m) where
+   empty = Reverse empty
